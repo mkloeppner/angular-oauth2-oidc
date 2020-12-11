@@ -219,7 +219,8 @@ export class OAuthService extends AuthConfig implements OnDestroy {
   public setupAutomaticSilentRefresh(
     params: object = {},
     listenTo?: 'access_token' | 'id_token' | 'any',
-    noPrompt = true
+    noPrompt = true,
+    refresh_grant_type: string = 'refresh_token'
   ): void {
     let shouldRunSilentRefresh = true;
     this.events
@@ -241,7 +242,7 @@ export class OAuthService extends AuthConfig implements OnDestroy {
           shouldRunSilentRefresh
         ) {
           // this.silentRefresh(params, noPrompt).catch(_ => {
-          this.refreshInternal(params, noPrompt).catch(_ => {
+          this.refreshInternal(params, noPrompt, refresh_grant_type).catch(_ => {
             this.debug('Automatic silent refresh did not work');
           });
         }
@@ -252,10 +253,11 @@ export class OAuthService extends AuthConfig implements OnDestroy {
 
   protected refreshInternal(
     params,
-    noPrompt
+    noPrompt, 
+    refresh_grant_type
   ): Promise<TokenResponse | OAuthEvent> {
     if (!this.useSilentRefresh && this.responseType === 'code') {
-      return this.refreshToken();
+      return this.refreshToken(refresh_grant_type);
     } else {
       return this.silentRefresh(params, noPrompt);
     }
@@ -773,10 +775,10 @@ export class OAuthService extends AuthConfig implements OnDestroy {
    * @param headers Optional additional http-headers.
    */
   public fetchTokenUsingPasswordFlow(
-    grant_type: string = 'password',
     userName: string,
     password: string,
-    headers: HttpHeaders = new HttpHeaders()
+    headers: HttpHeaders = new HttpHeaders(),
+    @Optional() grant_type: string = 'password',
   ): Promise<TokenResponse> {
     this.assertUrlNotNullAndCorrectProtocol(
       this.tokenEndpoint,
@@ -1249,7 +1251,7 @@ export class OAuthService extends AuthConfig implements OnDestroy {
     this.stopSessionCheckTimer();
 
     if (!this.useSilentRefresh && this.responseType === 'code') {
-      this.refreshToken()
+      this.refreshToken('refresh_token')
         .then(_ => {
           this.debug('token refresh after session change worked');
         })
