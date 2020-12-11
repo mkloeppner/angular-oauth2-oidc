@@ -773,6 +773,7 @@ export class OAuthService extends AuthConfig implements OnDestroy {
    * @param headers Optional additional http-headers.
    */
   public fetchTokenUsingPasswordFlow(
+    grant_type: string = 'password',
     userName: string,
     password: string,
     headers: HttpHeaders = new HttpHeaders()
@@ -790,7 +791,7 @@ export class OAuthService extends AuthConfig implements OnDestroy {
        * @stable
        */
       let params = new HttpParams({ encoder: new WebHttpUrlEncodingCodec() })
-        .set('grant_type', 'password')
+        .set('grant_type', grant_type)
         .set('scope', this.scope)
         .set('username', userName)
         .set('password', password);
@@ -852,7 +853,7 @@ export class OAuthService extends AuthConfig implements OnDestroy {
    * A solution for this is provided by the
    * method silentRefresh.
    */
-  public refreshToken(): Promise<TokenResponse> {
+  public refreshToken(refresh_grant_type: string = 'refresh_token'): Promise<TokenResponse> {
     this.assertUrlNotNullAndCorrectProtocol(
       this.tokenEndpoint,
       'tokenEndpoint'
@@ -860,7 +861,7 @@ export class OAuthService extends AuthConfig implements OnDestroy {
 
     return new Promise((resolve, reject) => {
       let params = new HttpParams()
-        .set('grant_type', 'refresh_token')
+        .set('grant_type', refresh_grant_type)
         .set('scope', this.scope)
         .set('refresh_token', this._storage.getItem('refresh_token'));
 
